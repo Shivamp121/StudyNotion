@@ -19,9 +19,10 @@ app.use(cookieParser());
 
 
 app.use(cors({
-  origin: "http://localhost:3000", // match exactly with your React app
+  origin: ["https://study-notion-ten-sigma.vercel.app", "http://localhost:3000"], 
   credentials: true,
-    allowedHeaders: ["Content-Type", "Authorization"],
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  allowedHeaders: ["Content-Type", "Authorization"]
 }));
 
 app.use(
