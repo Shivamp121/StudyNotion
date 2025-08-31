@@ -24,7 +24,7 @@ const NavBar = () => {
     (async () => {
       
       try {
-        const res = await apiConnector("GET", "http://localhost:4000/api/v1/course/showAllCategories");
+        const res = await apiConnector("GET", "https://studynotion-backend-yty3.onrender.com/course/showAllCategories");
         console.log("printing categories",res);
         setSubLinks(res.data.allTags);
       } catch (error) {
