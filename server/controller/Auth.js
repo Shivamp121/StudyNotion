@@ -245,7 +245,7 @@ exports.changePassword=async(req,res)=>{
     try{
 
         //fetch old password,new password,confirm new password,
-        const{oldPassword,newPassword,confirmNewPassword}=req.body;
+        const{oldPassword,newPassword}=req.body;
 
         //validate the data
         if(!oldPassword||!newPassword){
@@ -262,12 +262,7 @@ exports.changePassword=async(req,res)=>{
             })
         }
 
-        if(confirmNewPassword!==newPassword){
-            return res.status(403).json({
-                success:false,
-                message:"New password and Confirm new password do not match",
-            })
-        }
+        
         //match old password and password stored in db
         const user=await User.findOne({email});
         if(!user){
@@ -285,6 +280,10 @@ exports.changePassword=async(req,res)=>{
         //return response
 
     }catch(error){
+        return res.status(500).json({
+            error:error,
+            message:"Due to something password cannot be deleted"
+        })
 
     }
 
