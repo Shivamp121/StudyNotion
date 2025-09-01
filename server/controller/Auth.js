@@ -240,51 +240,64 @@ exports.login=async (req,res)=>{
 
 }
 //change password
-exports.changePassword=async(req,res)=>{
+const bcrypt = require("bcrypt");
+const User = require("../models/User"); // adjust path to your User model
 
-    try{
+exports.changePassword = async (req, res) => {
+  try {
+    const { oldPassword, newPassword } = req.body;
 
-        //fetch old password,new password,confirm new password,
-        const{oldPassword,newPassword}=req.body;
-
-        //validate the data
-        if(!oldPassword||!newPassword){
-            return res.status(403).json({
-                success:false,
-                message:"All fields are required",
-            })
-        }
-
-         if(oldPassword===newPassword){
-            return res.status(403).json({
-                success:false,
-                message:"New Password cant be the same as old password",
-            })
-        }
-
-        
-        //match old password and password stored in db
-        const user=await User.findOne({email});
-        if(!user){
-            return res.status(403).json({
-                success:false,
-                message:"User is not registered",
-            })
-        }
-        
-        //if matched then update the entry in db
-        if(await bcrypt.compare(oldPassword,User.password)){
-            const updatedPassword=User.findByIdAndUpdate()
-        }
-        //send mail that password has been updates successfully
-        //return response
-
-    }catch(error){
-        return res.status(500).json({
-            error:error,
-            message:"Due to something password cannot be deleted"
-        })
-
+    // Validate fields
+    if (!oldPassword || !newPassword) {
+      return res.status(403).json({
+        success: false,
+        message: "All fields are required",
+      });
     }
 
-}
+    if (oldPassword === newPassword) {
+      return res.status(403).json({
+        success: false,
+        message: "New password cannot be the same as old password",
+      });
+    }
+
+    // Find user (assuming you’re using auth middleware to set req.user.id)
+    const user = await User.findById(req.user.id);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    // Check old password
+    const isMatch = await bcrypt.compare(oldPassword, user.password);
+    if (!isMatch) {
+      return res.status(401).json({
+        success: false,
+        message: "Old password is incorrect",
+      });
+    }
+
+    // Hash new password
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    // Update password
+    user.password = hashedPassword;
+    await user.save();
+
+    // (Optional) send email notification here
+
+    return res.status(200).json({
+      success: true,
+      message: "Password changed successfully",
+    });
+  } catch (error) {
+    console.error("CHANGE PASSWORD ERROR:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Something went wrong. Password could not be changed",
+    });
+  }
+};
