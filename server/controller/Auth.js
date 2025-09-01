@@ -248,7 +248,7 @@ exports.changePassword=async(req,res)=>{
         const{oldPassword,newPassword,confirmNewPassword}=req.body;
 
         //validate the data
-        if(!oldPassword||!newPassword||!confirmNewPassword){
+        if(!oldPassword||!newPassword){
             return res.status(403).json({
                 success:false,
                 message:"All fields are required",
