@@ -240,8 +240,7 @@ exports.login=async (req,res)=>{
 
 }
 //change password
-const bcrypt = require("bcrypt");
-const User = require("../models/User"); // adjust path to your User model
+
 
 exports.changePassword = async (req, res) => {
   try {
