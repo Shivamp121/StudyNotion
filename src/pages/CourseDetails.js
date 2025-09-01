@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react"
 import { BiInfoCircle } from "react-icons/bi"
 import { HiOutlineGlobeAlt } from "react-icons/hi"
-import ReactMarkdown from "react-markdown";
+import ReactMarkdown from "react-markdown"
 import { useDispatch, useSelector } from "react-redux"
 import { useNavigate, useParams } from "react-router-dom"
 
@@ -15,41 +15,48 @@ import { fetchCourseDetails } from "../services/operation/courseDetailsApi"
 import { buyCourse } from "../services/operation/studentFeaturesApi"
 import GetAvgRating from "../utils/avgRating"
 import Error from "./Error"
+import { addToCart, removeFromCart } from "../slices/cartSlice"
 
 function CourseDetails() {
   const { user } = useSelector((state) => state.profile)
   const { token } = useSelector((state) => state.auth)
   const { loading } = useSelector((state) => state.profile)
   const { paymentLoading } = useSelector((state) => state.course)
+  const { cart } = useSelector((state) => state.cart)
+
   const dispatch = useDispatch()
   const navigate = useNavigate()
   const { courseId } = useParams()
+
   const [response, setResponse] = useState(null)
   const [confirmationModal, setConfirmationModal] = useState(null)
+
   useEffect(() => {
     ;(async () => {
       try {
         const res = await fetchCourseDetails(courseId)
-        console.log("printing responsesssss0",res);
         setResponse(res)
       } catch (error) {
         console.log("Could not fetch Course Details")
       }
     })()
   }, [courseId])
+
   const [avgReviewCount, setAvgReviewCount] = useState(0)
   useEffect(() => {
     const count = GetAvgRating(response?.data?.ratingAndReviews)
     setAvgReviewCount(count)
   }, [response])
+
   const [isActive, setIsActive] = useState(Array(0))
   const handleActive = (id) => {
     setIsActive(
       !isActive.includes(id)
         ? isActive.concat([id])
-        : isActive.filter((e) => e != id)
+        : isActive.filter((e) => e !== id)
     )
   }
+
   const [totalNoOfLectures, setTotalNoOfLectures] = useState(0)
   useEffect(() => {
     let lectures = 0
@@ -58,31 +65,33 @@ function CourseDetails() {
     })
     setTotalNoOfLectures(lectures)
   }, [response])
- 
+
   if (loading || !response || !response.data) {
-  return (
-    <div className="grid min-h-[calc(100vh-3.5rem)] place-items-center">
-      <div className="spinner"></div>
-    </div>
-  )
-}
+    return (
+      <div className="grid min-h-[calc(100vh-3.5rem)] place-items-center">
+        <div className="spinner"></div>
+      </div>
+    )
+  }
+
   if (!response.success) {
     return <Error />
   }
 
   const {
-  _id: course_id,
-  courseName,
-  courseDescription,
-  thumbnail,
-  price,
-  whatYouWillLearn,
-  courseContent,
-  ratingAndReviews,
-  instructor,
-  studentsEnrolled,
-  createdAt,
-} = response.data
+    _id: course_id,
+    courseName,
+    courseDescription,
+    thumbnail,
+    price,
+    whatYouWillLearn,
+    courseContent,
+    ratingAndReviews,
+    instructor,
+    studentsEnrolled,
+    createdAt,
+  } = response.data
+
   const handleBuyCourse = () => {
     if (token) {
       buyCourse(token, [courseId], user, navigate, dispatch)
@@ -98,8 +107,17 @@ function CourseDetails() {
     })
   }
 
+  const isCourseInCart = cart.some((item) => item._id === course_id)
+
+  const handleAddToCart = () => {
+    dispatch(addToCart(response.data))
+  }
+
+  const handleRemoveFromCart = () => {
+    dispatch(removeFromCart(course_id))
+  }
+
   if (paymentLoading) {
-    // console.log("payment loading")
     return (
       <div className="grid min-h-[calc(100vh-3.5rem)] place-items-center">
         <div className="spinner"></div>
@@ -159,7 +177,22 @@ function CourseDetails() {
               <button className="yellowButton" onClick={handleBuyCourse}>
                 Buy Now
               </button>
-              <button className="blackButton">Add to Cart</button>
+
+              {isCourseInCart ? (
+                <button
+                  className="blackButton"
+                  onClick={handleRemoveFromCart}
+                >
+                  Remove from Cart
+                </button>
+              ) : (
+                <button
+                  className="blackButton"
+                  onClick={handleAddToCart}
+                >
+                  Add to Cart
+                </button>
+              )}
             </div>
           </div>
           {/* Courses Card */}

@@ -58,9 +58,8 @@ console.log("id:", id, "type:", typeof id, "length:", id?.length);    const user
       })
     }
     // Delete Assosiated Profile with the User
-    await Profile.findByIdAndDelete({
-      _id: new mongoose.Types.ObjectId(user.additionalDetails),
-    })
+    console.log("Deleting profile:", user.additionalDetails)
+    await Profile.findByIdAndDelete(user.additionalDetails)
     for (const courseId of user.courses) {
       await Course.findByIdAndUpdate(
         courseId,
@@ -69,12 +68,16 @@ console.log("id:", id, "type:", typeof id, "length:", id?.length);    const user
       )
     }
     // Now Delete User
+    
+    console.log("Deleting user:", id)
+   
     await User.findByIdAndDelete(id)
     res.status(200).json({
       success: true,
       message: "User deleted successfully",
     })
-    await CourseProgress.deleteMany({ userId: id })
+    console.log("Removing from courses:", user.courses)
+ await CourseProgress.deleteMany({ userId: id })
   } catch (error) {
     console.log(error)
     res
